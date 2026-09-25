@@ -11,7 +11,10 @@ abstract: >-
   curated reference, and spatial statistics, and records every parameter for
   reproducibility.
 authors:
-  - name: "Cellscribe contributors"
+  - family-names: "Adedeji"
+    given-names: "John Adeyemo"
+    orcid: "https://orcid.org/0009-0004-1257-4551"
+    affiliation: "Osun State University, Osogbo, Osun State, Nigeria"
 version: "0.1.0"
 license: MIT
 repository-code: "https://github.com/jonahnki/cellscribe"

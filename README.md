@@ -197,7 +197,7 @@ If Cellscribe contributes to your work, please cite it (see [`CITATION.cff`](CIT
 @software{cellscribe,
   title   = {Cellscribe: automated first-pass quality control, clustering and annotation reports
              for single-cell and spatial transcriptomics},
-  author  = {{Cellscribe contributors}},
+  author  = {Adedeji, John Adeyemo},
   year    = {2026},
   version = {0.1.0},
   url     = {https://github.com/jonahnki/cellscribe},

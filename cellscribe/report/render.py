@@ -63,14 +63,14 @@ def _status_badge(status: str) -> Markup:
 
 def citation(version: str = __version__) -> tuple[str, str]:
     text = (
-        f"Cellscribe contributors. Cellscribe: automated first-pass quality control, clustering and annotation "
+        f"Adedeji JA. Cellscribe: automated first-pass quality control, clustering and annotation "
         f"reports for single-cell and spatial transcriptomics. Version {version}. {REPO_URL} (2026)."
     )
     bib = (
         "@software{cellscribe,\n"
         "  title   = {Cellscribe: automated first-pass quality control, clustering and annotation reports\n"
         "             for single-cell and spatial transcriptomics},\n"
-        "  author  = {{Cellscribe contributors}},\n"
+        "  author  = {Adedeji, John Adeyemo},\n"
         "  year    = {2026},\n"
         f"  version = {{{version}}},\n"
         f"  url     = {{{REPO_URL}}},\n"
