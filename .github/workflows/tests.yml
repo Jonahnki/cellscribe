@@ -2,42 +2,60 @@ name: tests
 
 on:
   push:
+    branches: [main]
+    paths-ignore: ["site/**", "docs/**", "**.md", "CITATION.cff", "LICENSE"]
   pull_request:
+    paths-ignore: ["site/**", "docs/**", "**.md", "CITATION.cff", "LICENSE"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  pytest:
+  lint:
+    name: lint
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "ruff==0.16.*"
+      - run: ruff check cellscribe tests
+
+  pytest:
+    name: pytest (py${{ matrix.python-version }})
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: pyproject.toml
-
       - name: Install
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-
       - name: Run tests
         run: pytest -q
-
       - name: Demo report (smoke test)
-        run: cellscribe demo --output demo_report.html --n 1500 --no-narrative
-
+        run: cellscribe demo --output demo_report.html --n 1500 --no-narrative --quiet
       - name: Upload demo report
         if: matrix.python-version == '3.11'
         uses: actions/upload-artifact@v4
         with:
           name: demo-report
           path: demo_report.html
+          retention-days: 14
