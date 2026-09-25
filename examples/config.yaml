@@ -1,0 +1,48 @@
+# Example Cellscribe configuration.
+#
+# Every key is optional: anything omitted uses the default shown by
+# `cellscribe config`. Command-line options override values in this file.
+# Unknown keys are rejected, so typos fail loudly.
+#
+# Usage:  cellscribe run --input data.h5ad --config examples/config.yaml
+
+seed: 0
+
+input:
+  species: auto            # auto | human | mouse
+  batch_key: null          # obs column with sample labels; auto-detected (sample, batch, ...) if null
+
+qc:
+  mode: flag               # flag: keep & label outlier cells (default) | filter: remove them before clustering
+  nmads: 5                 # MADs from the median for counts, genes and library complexity
+  nmads_mt: 3              # MADs above the median for mitochondrial fraction
+  max_pct_mt: null         # optional hard ceiling (e.g. 20); tissue-dependent, so off by default
+  doublets: auto           # auto (single-cell only) | on | off
+  expected_doublet_rate: 0.06
+
+preprocessing:
+  n_top_genes: 2000
+  n_pcs: 30
+  integrate: none          # none | harmony (opt-in; requires several batches)
+
+clustering:
+  resolution: null         # null = automatic selection from resolution_grid
+  resolution_grid: [0.4, 0.6, 0.8, 1.0, 1.2]
+  n_neighbors: 15
+
+annotation:
+  marker_file: null        # YAML (bundled schema) or CSV with cell_type,gene[,species,lineage]
+  min_log2fc: 1.0
+  max_padj: 0.05
+
+spatial:
+  enabled: auto            # auto: run when coordinates are present
+  n_perms: 1000
+
+narrative:
+  enabled: true            # only used if ANTHROPIC_API_KEY is set; false = never contact the API
+
+report:
+  title: null
+  plotlyjs: inline         # inline (self-contained) | cdn (smaller file, needs internet)
+  max_points: 50000

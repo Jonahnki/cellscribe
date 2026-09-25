@@ -1,0 +1,98 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cellscribe"
+dynamic = ["version"]
+description = "Automated first-pass QC, clustering, and cell-type annotation reports for single-cell and spatial transcriptomics data."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "Cellscribe contributors" }]
+keywords = [
+    "single-cell",
+    "scRNA-seq",
+    "spatial transcriptomics",
+    "quality control",
+    "cell type annotation",
+    "bioinformatics",
+    "Visium",
+    "Xenium",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "anndata>=0.10",
+    "scanpy>=1.10",
+    "squidpy>=1.4",
+    "leidenalg>=0.10",
+    "python-igraph>=0.10",
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "pandas>=1.5",
+    "scikit-learn>=1.2",
+    "h5py>=3.8",
+    "pillow>=9.0",
+    "plotly>=5.18",
+    "jinja2>=3.1",
+    "typer>=0.9",
+    "pydantic>=2.5",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+narrative = ["anthropic>=1.0"]
+harmony = ["harmonypy>=0.0.9"]
+all = ["anthropic>=1.0", "harmonypy>=0.0.9"]
+dev = ["pytest>=7.4", "anthropic>=1.0", "harmonypy>=0.0.9"]
+
+[project.scripts]
+cellscribe = "cellscribe.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/jonahnki/cellscribe"
+Issues = "https://github.com/jonahnki/cellscribe/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "cellscribe.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["cellscribe*"]
+
+[tool.setuptools.package-data]
+cellscribe = [
+    "data/markers/*.yaml",
+    "report/templates/*.j2",
+    "report/static/*",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "UP", "I"]
+ignore = ["E501", "B008", "B905", "UP007", "UP045"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::FutureWarning",
+    "ignore::SyntaxWarning",
+    "ignore:.*Import\\(s\\).*:UserWarning",
+]
+markers = [
+    "slow: end-to-end tests that run the full pipeline",
+]

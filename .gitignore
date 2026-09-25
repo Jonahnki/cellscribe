@@ -1,0 +1,18 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+.pytest_cache/
+.venv/
+venv/
+.coverage
+htmlcov/
+
+# Cellscribe outputs
+*_report.html
+report.html
+*.h5ad
+!tests/data/*.h5ad
+cellscribe_summary.json

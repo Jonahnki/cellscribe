@@ -1,0 +1,81 @@
+cff-version: 1.2.0
+message: "If you use Cellscribe in your research, please cite it as below, together with the methods listed in the report's 'How to cite' section."
+type: software
+title: "Cellscribe: automated first-pass quality control, clustering and annotation reports for single-cell and spatial transcriptomics"
+abstract: >-
+  Cellscribe generates self-contained HTML reports from single-cell RNA-seq and
+  spatial transcriptomics count matrices (10x Genomics, AnnData, CSV, Visium,
+  Xenium). It performs MAD-based quality control, doublet detection, Leiden
+  clustering with automatic resolution selection, a per-cluster QC breakdown that
+  exposes technical artefacts, marker-based cell-type candidate scoring against a
+  curated reference, and spatial statistics, and records every parameter for
+  reproducibility.
+authors:
+  - name: "Cellscribe contributors"
+version: "0.1.0"
+license: MIT
+repository-code: "https://github.com/jonahnki/cellscribe"
+url: "https://github.com/jonahnki/cellscribe"
+keywords:
+  - single-cell RNA-seq
+  - spatial transcriptomics
+  - quality control
+  - cell type annotation
+  - clustering
+  - bioinformatics
+references:
+  - type: article
+    title: "SCANPY: large-scale single-cell gene expression data analysis"
+    authors:
+      - family-names: Wolf
+        given-names: F. Alexander
+      - family-names: Angerer
+        given-names: Philipp
+      - family-names: Theis
+        given-names: Fabian J.
+    journal: Genome Biology
+    volume: 19
+    start: 15
+    year: 2018
+  - type: article
+    title: "From Louvain to Leiden: guaranteeing well-connected communities"
+    authors:
+      - family-names: Traag
+        given-names: V. A.
+      - family-names: Waltman
+        given-names: L.
+      - family-names: van Eck
+        given-names: N. J.
+    journal: Scientific Reports
+    volume: 9
+    start: 5233
+    year: 2019
+  - type: article
+    title: "Scrublet: computational identification of cell doublets in single-cell transcriptomic data"
+    authors:
+      - family-names: Wolock
+        given-names: Samuel L.
+      - family-names: Lopez
+        given-names: Romain
+      - family-names: Klein
+        given-names: Allon M.
+    journal: Cell Systems
+    volume: 8
+    issue: 4
+    start: 281
+    end: 291
+    year: 2019
+  - type: article
+    title: "Squidpy: a scalable framework for spatial omics analysis"
+    authors:
+      - family-names: Palla
+        given-names: Giovanni
+      - family-names: Spitzer
+        given-names: Hannah
+      - family-names: Klein
+        given-names: Michal
+    journal: Nature Methods
+    volume: 19
+    start: 171
+    end: 178
+    year: 2022

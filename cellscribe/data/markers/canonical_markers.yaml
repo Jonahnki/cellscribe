@@ -1,0 +1,361 @@
+# Cellscribe canonical marker reference (human + mouse)
+#
+# Provenance and licensing
+# ------------------------
+# This list was compiled by hand from canonical, textbook-level marker genes
+# that are established in the primary literature and in public cell atlases
+# (e.g. Tabula Sapiens, Tabula Muris, Human Protein Atlas single-cell type
+# annotations, and tissue-specific atlas papers). Each entry is a short list of
+# well-known marker genes, i.e. factual statements about gene expression, and
+# is NOT an export or copy of any third-party database.
+#
+# We deliberately do NOT bundle larger community databases such as PanglaoDB
+# or CellMarker, because their redistribution terms are not clearly stated.
+# Users who want those references can download them under the providers'
+# terms and pass them via `annotation.marker_file` (YAML in this format, or a
+# two/three-column CSV: cell_type,gene[,species]).
+#
+# This file is released under the same MIT license as Cellscribe.
+#
+# Schema
+# ------
+#   name:    display name of the cell type or state
+#   lineage: broad group; used as the fallback label when several subtypes of
+#            one lineage fit a cluster about equally well
+#   kind:    "cell_type" (default) or "state" (e.g. proliferation). States are
+#            reported alongside the cell-type call rather than replacing it.
+#   generic: true for catch-all entries that should only win when no more
+#            specific entry of the same lineage fits
+#   human / mouse: marker gene symbols (HGNC / MGI). Aliases may be listed;
+#            only genes present in the dataset are used for scoring.
+
+version: "2026.09"
+cell_types:
+  # ---------------------------------------------------------------- T / NK
+  - name: CD4+ T cell
+    lineage: T/NK lymphocyte
+    human: [CD3D, CD3E, CD4, IL7R, CCR7, LTB, TCF7, CD40LG, MAL, LEF1]
+    mouse: [Cd3d, Cd3e, Cd4, Il7r, Ccr7, Ltb, Tcf7, Cd40lg, Mal, Lef1]
+  - name: Regulatory T cell
+    lineage: T/NK lymphocyte
+    human: [FOXP3, IL2RA, CTLA4, IKZF2, TNFRSF18, TIGIT, CD4, BATF]
+    mouse: [Foxp3, Il2ra, Ctla4, Ikzf2, Tnfrsf18, Tigit, Cd4, Batf]
+  - name: CD8+ T cell
+    lineage: T/NK lymphocyte
+    human: [CD3D, CD3E, CD8A, CD8B, GZMK, CCL5, CD3G, GZMH, CST7, NKG7]
+    mouse: [Cd3d, Cd3e, Cd8a, Cd8b1, Gzmk, Ccl5, Cd3g, Cst7, Gzmb, Nkg7]
+  - name: Gamma-delta T cell
+    lineage: T/NK lymphocyte
+    human: [TRDC, TRGC1, TRGC2, TRDV2, TRGV9, CD3D, KLRC1]
+    mouse: [Trdc, Tcrg-C1, Tcrg-C2, Cd3d, Cd163l1, Sox13]
+  - name: MAIT cell
+    lineage: T/NK lymphocyte
+    human: [SLC4A10, KLRB1, TRAV1-2, ZBTB16, RORC, CCR6, IL23R, CD3D]
+    mouse: [Slc4a10, Zbtb16, Rorc, Ccr6, Il23r, Cd3d]
+  - name: NK cell
+    lineage: T/NK lymphocyte
+    human: [NKG7, GNLY, KLRD1, KLRF1, NCAM1, PRF1, GZMB, FCGR3A, TYROBP, NCR1]
+    mouse: [Nkg7, Ncr1, Klrd1, Klrb1c, Prf1, Gzma, Gzmb, Tyrobp, Klrk1, Klre1]
+  - name: Innate lymphoid cell
+    lineage: T/NK lymphocyte
+    human: [IL7R, KIT, RORC, GATA3, PTGDR2, IL1RL1, AREG, KLRB1]
+    mouse: [Il7r, Kit, Rorc, Gata3, Ptgdr2, Il1rl1, Areg, Klrb1b]
+
+  # ---------------------------------------------------------------- B lineage
+  - name: B cell
+    lineage: B lymphocyte
+    human: [MS4A1, CD79A, CD79B, CD19, BANK1, CD22, PAX5, IGHM, IGHD, TCL1A]
+    mouse: [Ms4a1, Cd79a, Cd79b, Cd19, Bank1, Cd22, Pax5, Ighm, Ighd, Fcer2a]
+  - name: Plasma cell
+    lineage: B lymphocyte
+    human: [JCHAIN, MZB1, SDC1, XBP1, PRDM1, IGHG1, IGKC, TNFRSF17, DERL3]
+    mouse: [Jchain, Mzb1, Sdc1, Xbp1, Prdm1, Ighg1, Igkc, Tnfrsf17, Derl3]
+
+  # ---------------------------------------------------------------- Myeloid
+  - name: Classical monocyte
+    lineage: Monocyte/macrophage
+    human: [CD14, LYZ, S100A8, S100A9, VCAN, FCN1, S100A12, CD36, CSF1R]
+    mouse: [Ly6c2, Ccr2, Lyz2, Plac8, Chil3, F13a1, Ms4a4c, Fn1, Csf1r, Cd14]
+  - name: Non-classical monocyte
+    lineage: Monocyte/macrophage
+    human: [FCGR3A, MS4A7, CDKN1C, LST1, RHOC, IFITM3, CX3CR1, LILRB2]
+    mouse: [Nr4a1, Cx3cr1, Ace, Treml4, Fcgr4, Cd300e, Adgre4, Spn, Itgal]
+  - name: Macrophage
+    lineage: Monocyte/macrophage
+    human: [CD68, C1QA, C1QB, C1QC, APOE, MRC1, CD163, SELENOP, FOLR2, MSR1]
+    mouse: [Adgre1, C1qa, C1qb, C1qc, Cd68, Mrc1, Cd163, Apoe, Ms4a7, Fcgr1]
+  - name: Alveolar macrophage
+    lineage: Monocyte/macrophage
+    human: [MARCO, PPARG, FABP4, INHBA, MSR1, MCEMP1, CD68, APOC1]
+    mouse: [Ear2, Siglecf, Marco, Itgax, Car4, Ca4, Pparg, Krt79, Chil3]
+  - name: Kupffer cell
+    lineage: Monocyte/macrophage
+    human: [CD5L, VSIG4, MARCO, CD163, TIMD4, C1QA, VCAM1]
+    mouse: [Clec4f, Vsig4, Cd5l, Timd4, Marco, C1qa, Cd163]
+  - name: Microglia
+    lineage: Monocyte/macrophage
+    human: [P2RY12, TMEM119, CX3CR1, CSF1R, C1QA, SALL1, HEXB, GPR34]
+    mouse: [P2ry12, Tmem119, Cx3cr1, Csf1r, Hexb, Sall1, Siglech, Gpr34, Fcrls, Olfml3]
+  - name: Conventional dendritic cell type 1
+    lineage: Dendritic cell
+    human: [CLEC9A, XCR1, CADM1, BATF3, IDO1, WDFY4, IRF8, CLNK]
+    mouse: [Xcr1, Clec9a, Cadm1, Batf3, Irf8, Wdfy4, Itgae, Naaa]
+  - name: Conventional dendritic cell type 2
+    lineage: Dendritic cell
+    human: [CD1C, FCER1A, CLEC10A, HLA-DQA1, CD1E, PKIB, HLA-DPB1, IRF4]
+    mouse: [Cd209a, Mgl2, Clec4a4, Sirpa, Irf4, H2-Ab1, H2-Eb1, Itgam]
+  - name: Plasmacytoid dendritic cell
+    lineage: Dendritic cell
+    human: [LILRA4, CLEC4C, IL3RA, IRF7, TCF4, PTCRA, SERPINF1, PLD4]
+    mouse: [Siglech, Bst2, Ccr9, Irf7, Tcf4, Klk1, Cox6a2, Pacsin1, Ly6d]
+  - name: Mast cell
+    lineage: Granulocyte/mast cell
+    human: [TPSAB1, TPSB2, CPA3, KIT, MS4A2, HPGDS, HDC, GATA2]
+    mouse: [Cpa3, Mcpt4, Cma1, Tpsb2, Tpsab1, Kit, Fcer1a, Ms4a2, Hdc]
+  - name: Basophil
+    lineage: Granulocyte/mast cell
+    human: [CLC, HDC, GATA2, MS4A2, CPA3, ENPP3, CCR3, IL3RA]
+    mouse: [Mcpt8, Prss34, Cd200r3, Hdc, Gata2, Ms4a2, Fcer1a, Cyp11a1]
+  - name: Neutrophil
+    lineage: Granulocyte/mast cell
+    human: [CSF3R, FCGR3B, CXCR2, FPR1, S100A8, S100A9, G0S2, CMTM2, MNDA, PROK2]
+    mouse: [S100a8, S100a9, Retnlg, Ly6g, Cxcr2, Csf3r, Mmp8, Mmp9, Ngp, Camp]
+  - name: Eosinophil
+    lineage: Granulocyte/mast cell
+    human: [CLC, CCR3, SIGLEC8, IL5RA, EPX, PRG2, RNASE2]
+    mouse: [Prg2, Epx, Ear6, Ccr3, Il5ra, Siglecf]
+
+  # ---------------------------------------------------------------- Blood / progenitors
+  - name: Platelet / megakaryocyte
+    lineage: Erythroid/megakaryocyte
+    human: [PPBP, PF4, GP9, ITGA2B, GP1BB, TUBB1, GNG11, CAVIN2]
+    mouse: [Ppbp, Pf4, Gp9, Itga2b, Gp1bb, Tubb1, Gng11, Clec1b]
+  - name: Erythroid cell
+    lineage: Erythroid/megakaryocyte
+    human: [HBB, HBA1, HBA2, ALAS2, CA1, AHSP, SLC4A1, GYPA]
+    mouse: [Hbb-bs, Hbb-bt, Hba-a1, Hba-a2, Alas2, Car2, Ca2, Ahsp, Slc4a1, Gypa]
+  - name: Hematopoietic stem/progenitor cell
+    lineage: Progenitor
+    human: [CD34, PROM1, SPINK2, CRHBP, HLF, MEIS1, AVP, KIT]
+    mouse: [Procr, Hlf, Mecom, Kit, Ly6a, Meis1, Crhbp, Cd34]
+
+  # ---------------------------------------------------------------- Vascular / stromal
+  - name: Endothelial cell
+    lineage: Endothelial
+    human: [PECAM1, VWF, CDH5, CLDN5, KDR, FLT1, EMCN, ERG, PLVAP, EGFL7]
+    mouse: [Pecam1, Cdh5, Cldn5, Kdr, Flt1, Emcn, Erg, Plvap, Tek, Egfl7]
+  - name: Lymphatic endothelial cell
+    lineage: Endothelial
+    human: [PROX1, LYVE1, PDPN, CCL21, TFF3, FLT4, MMRN1, RELN]
+    mouse: [Prox1, Lyve1, Pdpn, Ccl21a, Flt4, Mmrn1, Reln, Tbx1]
+  - name: Fibroblast
+    lineage: Fibroblast/mesenchymal
+    human: [COL1A1, COL1A2, COL3A1, DCN, LUM, PDGFRA, FBLN1, MFAP5, SFRP2, GSN]
+    mouse: [Col1a1, Col1a2, Col3a1, Dcn, Lum, Pdgfra, Fbln1, Mfap5, Gsn, Pi16]
+  - name: Myofibroblast
+    lineage: Fibroblast/mesenchymal
+    human: [ACTA2, POSTN, CTHRC1, COL1A1, COL3A1, TAGLN, COL11A1, FAP]
+    mouse: [Acta2, Postn, Cthrc1, Col1a1, Col3a1, Tagln, Col11a1, Fap]
+  - name: Hepatic stellate cell
+    lineage: Fibroblast/mesenchymal
+    human: [LRAT, RELN, COLEC11, DCN, PDGFRB, HGF, ECM1, RGS5]
+    mouse: [Lrat, Reln, Colec11, Dcn, Pdgfrb, Hgf, Ecm1, Des]
+  - name: Mesothelial cell
+    lineage: Fibroblast/mesenchymal
+    human: [MSLN, UPK3B, WT1, KRT19, CALB2, ITLN1, KRT8, LRRN4]
+    mouse: [Msln, Upk3b, Wt1, Krt19, Calb2, Lrrn4, Upk1b, Krt8]
+  - name: Pericyte
+    lineage: Mural cell
+    human: [RGS5, PDGFRB, KCNJ8, ABCC9, NOTCH3, HIGD1B, CSPG4, MCAM]
+    mouse: [Rgs5, Pdgfrb, Kcnj8, Abcc9, Notch3, Higd1b, Cspg4, Vtn]
+  - name: Smooth muscle cell
+    lineage: Mural cell
+    human: [ACTA2, MYH11, DES, CNN1, TAGLN, MYL9, LMOD1, SYNPO2]
+    mouse: [Acta2, Myh11, Des, Cnn1, Tagln, Myl9, Lmod1, Synpo2]
+  - name: Adipocyte
+    lineage: Adipose
+    human: [ADIPOQ, PLIN1, LEP, CIDEC, FABP4, LPL, PLIN4, PPARG]
+    mouse: [Adipoq, Plin1, Lep, Cidec, Fabp4, Lpl, Retn, Car3, Ca3]
+
+  # ---------------------------------------------------------------- Epithelial
+  - name: Epithelial cell (unspecified)
+    lineage: Epithelial
+    generic: true
+    human: [EPCAM, KRT8, KRT18, KRT19, CDH1, CLDN4, ELF3, CLDN7]
+    mouse: [Epcam, Krt8, Krt18, Krt19, Cdh1, Cldn4, Elf3, Cldn7]
+  - name: Basal epithelial cell
+    lineage: Epithelial
+    human: [KRT5, KRT14, KRT15, TP63, COL17A1, S100A2, KRT17, DSC3]
+    mouse: [Krt5, Krt14, Krt15, Trp63, Col17a1, Cxcl14, Krt17, Dsc3]
+  - name: Suprabasal keratinocyte
+    lineage: Epithelial
+    human: [KRT1, KRT10, KRTDAP, DMKN, SBSN, LORICRIN, FLG, IVL]
+    mouse: [Krt1, Krt10, Krtdap, Dmkn, Sbsn, Lor, Flg, Ivl]
+  - name: Melanocyte
+    lineage: Neural crest
+    human: [PMEL, MLANA, TYRP1, DCT, TYR, MITF, QPCT]
+    mouse: [Pmel, Mlana, Tyrp1, Dct, Tyr, Mitf]
+  - name: Hepatocyte
+    lineage: Epithelial
+    human: [ALB, APOA1, APOC3, TF, TTR, SERPINA1, CYP3A4, HP, FGB, APOH]
+    mouse: [Alb, Apoa1, Apoc3, Trf, Ttr, Serpina1a, Cyp3a11, Hp, Fgb, Apoh]
+  - name: Ductal cell (cholangiocyte / pancreatic duct)
+    lineage: Epithelial
+    human: [KRT19, KRT7, SOX9, SPP1, CFTR, ANXA4, SLC4A4, MMP7]
+    mouse: [Krt19, Krt7, Sox9, Spp1, Cftr, Anxa4, Slc4a4, Tacstd2]
+  - name: Alveolar type 1 cell
+    lineage: Epithelial
+    human: [AGER, RTKN2, HOPX, CLIC5, PDPN, EMP2, GPRC5A, SPOCK2]
+    mouse: [Ager, Rtkn2, Hopx, Clic5, Pdpn, Emp2, Aqp5, Gprc5a, Akap5]
+  - name: Alveolar type 2 cell
+    lineage: Epithelial
+    human: [SFTPC, SFTPB, SFTPA1, SFTPA2, LAMP3, NAPSA, ABCA3, SLC34A2, PGC, SFTPD]
+    mouse: [Sftpc, Sftpb, Sftpa1, Lamp3, Napsa, Abca3, Slc34a2, Lyz1, Sftpd, Cxcl15]
+  - name: Club cell
+    lineage: Epithelial
+    human: [SCGB1A1, SCGB3A1, SCGB3A2, MSMB, CYP2F1, BPIFA1, WFDC2]
+    mouse: [Scgb1a1, Scgb3a2, Scgb3a1, Cyp2f2, Bpifa1, Cbr2, Retnla]
+  - name: Ciliated cell
+    lineage: Epithelial
+    human: [FOXJ1, CAPS, TPPP3, PIFO, RSPH1, DNAH5, SNTN, CFAP43]
+    mouse: [Foxj1, Caps, Tppp3, Pifo, Rsph1, Dnah5, Sntn, Cfap43, Ccdc153]
+  - name: Goblet cell
+    lineage: Epithelial
+    human: [MUC2, MUC5AC, TFF3, SPDEF, FCGBP, ZG16, CLCA1, AGR2]
+    mouse: [Muc2, Muc5ac, Tff3, Spdef, Fcgbp, Zg16, Clca1, Agr2]
+  - name: Enterocyte
+    lineage: Epithelial
+    human: [FABP2, APOA4, APOB, ALPI, RBP2, SI, VIL1, FABP1]
+    mouse: [Fabp2, Apoa4, Apob, Alpi, Rbp2, Sis, Vil1, Fabp1]
+  - name: Colonocyte
+    lineage: Epithelial
+    human: [CA2, SLC26A3, AQP8, CEACAM7, GUCA2A, GUCA2B, KRT20, SLC26A2]
+    mouse: [Car1, Ca1, Car4, Ca4, Slc26a3, Aqp8, Guca2a, Guca2b, Krt20, Cdhr5]
+  - name: Intestinal stem cell
+    lineage: Epithelial
+    human: [LGR5, OLFM4, ASCL2, SMOC2, RGMB, SOX9, EPHB2]
+    mouse: [Lgr5, Olfm4, Ascl2, Smoc2, Rgmb, Slc12a2, Sox9]
+  - name: Paneth cell
+    lineage: Epithelial
+    human: [DEFA5, DEFA6, LYZ, REG3A, ITLN2, PLA2G2A, MMP7]
+    mouse: [Lyz1, Defa24, Mptx2, Ang4, Itln1, Mmp7, Clps, Pnliprp2]
+  - name: Tuft cell
+    lineage: Epithelial
+    human: [POU2F3, DCLK1, TRPM5, AVIL, SH2D6, LRMP, IL25, GFI1B]
+    mouse: [Pou2f3, Dclk1, Trpm5, Avil, Sh2d6, Lrmp, Il25, Gfi1b]
+  - name: Enteroendocrine cell
+    lineage: Epithelial
+    human: [CHGA, CHGB, NEUROD1, TPH1, SCG3, PYY, CCK, NEUROG3]
+    mouse: [Chga, Chgb, Neurod1, Tph1, Scg3, Pyy, Cck, Neurog3]
+  - name: Pancreatic acinar cell
+    lineage: Epithelial
+    human: [PRSS1, CPA1, CELA3A, CTRB1, PNLIP, CPB1, CEL, REG1A, CTRC, SPINK1]
+    mouse: [Prss2, Try4, Cpa1, Cela3b, Ctrb1, Pnlip, Cpb1, Cel, Reg1, Ctrc]
+  - name: Pancreatic beta cell
+    lineage: Endocrine
+    human: [INS, IAPP, MAFA, NKX6-1, PDX1, ADCYAP1, HADH, G6PC2]
+    mouse: [Ins1, Ins2, Iapp, Mafa, Nkx6-1, Pdx1, G6pc2, Slc2a2]
+  - name: Pancreatic alpha cell
+    lineage: Endocrine
+    human: [GCG, ARX, IRX2, TTR, LOXL4, TM4SF4, GC, FEV]
+    mouse: [Gcg, Arx, Irx2, Ttr, Mafb, Tm4sf4, Gc, Pou3f4]
+  - name: Pancreatic delta cell
+    lineage: Endocrine
+    human: [SST, HHEX, RBP4, LEPR, BCHE, CASR]
+    mouse: [Sst, Hhex, Rbp4, Lepr, Bche, Ghsr]
+  - name: Thyroid follicular cell
+    lineage: Endocrine
+    human: [TG, TPO, TSHR, PAX8, FOXE1, DIO1, IYD]
+    mouse: [Tg, Tpo, Tshr, Pax8, Foxe1, Dio1, Iyd]
+  - name: Kidney proximal tubule cell
+    lineage: Kidney epithelial
+    human: [LRP2, CUBN, SLC34A1, SLC5A12, HNF4A, GATM, ALDOB, SLC22A6, MIOX]
+    mouse: [Lrp2, Cubn, Slc34a1, Slc5a12, Hnf4a, Gatm, Aldob, Slc22a6, Miox]
+  - name: Loop of Henle (thick ascending limb) cell
+    lineage: Kidney epithelial
+    human: [UMOD, SLC12A1, CLDN16, EGF, CASR, KCNJ1]
+    mouse: [Umod, Slc12a1, Cldn16, Egf, Casr, Kcnj1]
+  - name: Distal convoluted tubule cell
+    lineage: Kidney epithelial
+    human: [SLC12A3, PVALB, CALB1, TRPM6, KLHL3]
+    mouse: [Slc12a3, Pvalb, Calb1, Trpm6, Klhl3]
+  - name: Collecting duct principal cell
+    lineage: Kidney epithelial
+    human: [AQP2, AQP3, FXYD4, SCNN1G, SCNN1B, GATA3, HSD11B2]
+    mouse: [Aqp2, Aqp3, Fxyd4, Scnn1g, Scnn1b, Gata3, Hsd11b2]
+  - name: Intercalated cell
+    lineage: Kidney epithelial
+    human: [ATP6V1B1, ATP6V0D2, FOXI1, SLC4A1, SLC26A4, ATP6V1G3, DMRT2]
+    mouse: [Atp6v1b1, Atp6v0d2, Foxi1, Slc4a1, Slc26a4, Atp6v1g3, Dmrt2]
+  - name: Podocyte
+    lineage: Kidney epithelial
+    human: [NPHS1, NPHS2, PODXL, WT1, PTPRO, CLIC5, SYNPO, MAFB]
+    mouse: [Nphs1, Nphs2, Podxl, Wt1, Ptpro, Clic5, Synpo, Mafb]
+
+  # ---------------------------------------------------------------- Nervous system
+  - name: Excitatory neuron
+    lineage: Neuron
+    human: [SLC17A7, SLC17A6, SATB2, NEUROD6, CAMK2A, RBFOX3, SNAP25, TBR1]
+    mouse: [Slc17a7, Slc17a6, Satb2, Neurod6, Camk2a, Rbfox3, Snap25, Tbr1]
+  - name: Inhibitory neuron
+    lineage: Neuron
+    human: [GAD1, GAD2, SLC32A1, DLX1, DLX2, LHX6, RBFOX3, SNAP25]
+    mouse: [Gad1, Gad2, Slc32a1, Dlx1, Dlx2, Lhx6, Rbfox3, Snap25]
+  - name: Astrocyte
+    lineage: Glia
+    human: [GFAP, AQP4, SLC1A3, SLC1A2, ALDH1L1, GJA1, ALDOC, AGT]
+    mouse: [Gfap, Aqp4, Slc1a3, Slc1a2, Aldh1l1, Gja1, Aldoc, Agt]
+  - name: Oligodendrocyte
+    lineage: Glia
+    human: [MBP, PLP1, MOG, MOBP, MAG, CNP, ST18, OPALIN]
+    mouse: [Mbp, Plp1, Mog, Mobp, Mag, Cnp, St18, Opalin]
+  - name: Oligodendrocyte precursor cell
+    lineage: Glia
+    human: [PDGFRA, CSPG4, OLIG1, OLIG2, SOX10, VCAN, PTPRZ1, GPR17]
+    mouse: [Pdgfra, Cspg4, Olig1, Olig2, Sox10, Vcan, Ptprz1, Gpr17]
+  - name: Ependymal cell
+    lineage: Glia
+    human: [FOXJ1, CCDC153, RARRES2, TMEM212, PIFO, DYNLRB2]
+    mouse: [Foxj1, Ccdc153, Rarres2, Tmem212, Pifo, Dynlrb2]
+  - name: Schwann cell
+    lineage: Glia
+    human: [MPZ, PMP22, S100B, SOX10, PRX, NGFR, CDH19, PLP1]
+    mouse: [Mpz, Pmp22, S100b, Sox10, Prx, Ngfr, Cdh19, Plp1]
+
+  # ---------------------------------------------------------------- Muscle / skeletal
+  - name: Cardiomyocyte
+    lineage: Muscle
+    human: [TNNT2, MYH6, MYH7, ACTC1, TTN, RYR2, MYL2, NPPA]
+    mouse: [Tnnt2, Myh6, Myh7, Actc1, Ttn, Ryr2, Myl2, Nppa]
+  - name: Skeletal muscle fiber
+    lineage: Muscle
+    human: [ACTA1, CKM, MYH1, MYH2, TNNT1, TNNT3, MYL1, MYLPF]
+    mouse: [Acta1, Ckm, Myh1, Myh2, Myh4, Tnnt3, Myl1, Mylpf]
+  - name: Muscle satellite cell
+    lineage: Muscle
+    human: [PAX7, MYF5, MYOD1, CDH15, CALCR, CHODL]
+    mouse: [Pax7, Myf5, Myod1, Cdh15, Calcr, Chodl]
+  - name: Osteoblast
+    lineage: Bone/cartilage
+    human: [RUNX2, SP7, BGLAP, IBSP, ALPL, COL1A1, SPP1, DMP1]
+    mouse: [Runx2, Sp7, Bglap, Ibsp, Alpl, Col1a1, Spp1, Dmp1]
+  - name: Chondrocyte
+    lineage: Bone/cartilage
+    human: [COL2A1, ACAN, SOX9, COL9A1, COMP, MATN3, CNMD, COL11A2]
+    mouse: [Col2a1, Acan, Sox9, Col9a1, Comp, Matn3, Cnmd, Col11a2]
+  - name: Osteoclast
+    lineage: Monocyte/macrophage
+    human: [ACP5, CTSK, MMP9, OCSTAMP, DCSTAMP, CALCR, NFATC1]
+    mouse: [Acp5, Ctsk, Mmp9, Ocstamp, Dcstamp, Calcr, Nfatc1]
+
+  # ---------------------------------------------------------------- Cell states
+  - name: Proliferating
+    lineage: Cell state
+    kind: state
+    human: [MKI67, TOP2A, CENPF, NUSAP1, TPX2, BIRC5, UBE2C, CDK1, TYMS, RRM2]
+    mouse: [Mki67, Top2a, Cenpf, Nusap1, Tpx2, Birc5, Ube2c, Cdk1, Tyms, Rrm2]
+  - name: Interferon-stimulated
+    lineage: Cell state
+    kind: state
+    human: [ISG15, IFI6, IFIT1, IFIT3, MX1, OAS1, IFI44L, RSAD2]
+    mouse: [Isg15, Ifi27l2a, Ifit1, Ifit3, Mx1, Oas1a, Ifi44, Rsad2]

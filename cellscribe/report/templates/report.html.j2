@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="Cellscribe {{ version }}">
+<title>{{ title }}</title>
+<style>
+{{ css | safe }}
+</style>
+{{ plotly_js | safe }}
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Report sections">
+  <div class="brand">Cellscribe<small>First-pass QC &amp; annotation report · v{{ version }}</small></div>
+  <ol>
+  {% for s in sections %}
+    <li><a href="#{{ s.id }}">{{ s.title }}{% if s.flags %}<span class="flagcount" title="{{ s.flags }} flagged">⚠ {{ s.flags }}</span>{% endif %}</a></li>
+  {% endfor %}
+  </ol>
+  <div class="toc-foot">Generated {{ summary.generated_at }}<br>Runtime {{ summary.runtime_seconds }} s<br>Research use only</div>
+</nav>
+
+<main>
+<header class="report-head">
+  <h1>{{ title }}</h1>
+  <div class="meta">{{ modality_label }} · {{ summary.input.format }} input · {{ summary.input.species }} · generated {{ summary.generated_at }} with Cellscribe {{ version }}</div>
+  <div class="disclaimer"><b>Research use only.</b> This automated first-pass report is intended to guide further analysis. It is not validated for clinical or diagnostic use, and cell-type labels are hypotheses based on canonical marker genes that should be confirmed by an expert.</div>
+</header>
+
+{# ================================================================ 1 #}
+<section class="card" id="summary">
+  <h2><span class="num">1</span>Executive summary</h2>
+  <p class="lede">The key numbers and the findings that most affect how this dataset should be analysed next.</p>
+  <div class="tiles">
+  {% for t in tiles %}
+    <div class="tile{% if t.warn %} warn{% endif %}"><div class="label">{{ t.label }}</div><div class="value">{{ t.value }}</div><div class="sub">{{ t.sub }}</div></div>
+  {% endfor %}
+  </div>
+  <h3>Key findings</h3>
+  <ul class="findings">
+  {% for f in summary.key_findings %}
+    <li class="{{ f.severity }}"><span class="ico" aria-label="{{ f.severity }}">{{ icons[f.severity] }}</span><span>{{ f.message }}</span></li>
+  {% endfor %}
+  </ul>
+  {% if narrative %}<p class="small" style="margin-top:14px">An AI-written interpretive summary is available in <a href="#narrative">section {{ narrative_num }}</a>.</p>{% endif %}
+</section>
+
+{# ================================================================ 2 #}
+<section class="card" id="input">
+  <h2><span class="num">2</span>Sample &amp; input</h2>
+  <p class="lede">What was loaded, and how it was interpreted.</p>
+  <dl class="kv">
+  {% for k, v in input_rows %}<dt>{{ k }}</dt><dd>{{ v }}</dd>{% endfor %}
+  </dl>
+  {% if batch_rows %}
+  <h3>Samples / batches ({{ summary.input.batch_key }})</h3>
+  <div class="table-wrap"><table>
+    <tr><th>{{ summary.input.batch_key }}</th><th class="num">Cells loaded</th></tr>
+    {% for b, n in batch_rows %}<tr><td>{{ b }}</td><td class="num">{{ "{:,}".format(n) }}</td></tr>{% endfor %}
+  </table></div>
+  {% endif %}
+  {% if input_notes %}
+  <h3>Notes on the input</h3>
+  <ul class="findings">{% for n in input_notes %}<li class="{{ n.severity }}"><span class="ico">{{ icons[n.severity] }}</span><span>{{ n.message }}</span></li>{% endfor %}</ul>
+  {% endif %}
+</section>
+
+{# ================================================================ 3 #}
+<section class="card" id="qc">
+  <h2><span class="num">3</span>Quality control</h2>
+  <p class="lede">Cells were flagged when a QC metric lay more than {{ cfg.qc.nmads | round(1) }} median absolute deviations (MADs) from the median ({{ cfg.qc.nmads_mt | round(1) }} MADs above for mitochondrial fraction), a data-adaptive alternative to fixed cutoffs.
+  {% if cfg.qc.mode == "flag" %}Flagged cells were <b>kept</b> and labelled, so low-quality populations remain visible in the per-cluster breakdown.{% else %}Flagged cells were <b>removed</b> before clustering ({{ "{:,}".format(qc.n_removed_by_filter) }} cells).{% endif %}</p>
+  <div class="tiles">
+    <div class="tile"><div class="label">Cells after minimal floor</div><div class="value">{{ "{:,}".format(qc.n_cells_input - qc.n_cells_below_floor) }}</div><div class="sub">{{ "{:,}".format(qc.n_cells_below_floor) }} barcodes with &lt; {{ qc.min_genes }} genes removed</div></div>
+    <div class="tile{% if pct_flagged > 20 %} warn{% endif %}"><div class="label">Flagged by QC</div><div class="value">{{ "%.1f" | format(pct_flagged) }}%</div><div class="sub">{{ "{:,}".format(qc.n_flagged) }} cells</div></div>
+    <div class="tile"><div class="label">Median counts / cell</div><div class="value">{{ "{:,.0f}".format(summary.dataset.median_counts) }}</div><div class="sub">median genes {{ "{:,.0f}".format(summary.dataset.median_genes) }}</div></div>
+    <div class="tile"><div class="label">Median % mitochondrial</div><div class="value">{% if summary.dataset.median_pct_mt is not none %}{{ "%.1f" | format(summary.dataset.median_pct_mt) }}%{% else %}n/a{% endif %}</div><div class="sub">{% if qc.has_mt %}MT- genes detected{% else %}no mitochondrial genes{% endif %}</div></div>
+  </div>
+
+  <h3>Suggested thresholds</h3>
+  <p class="small">Cells outside these bounds were flagged. Use them as a starting point if you filter the data yourself.</p>
+  <div class="table-wrap"><table id="tbl-thresholds">
+    <tr><th>Metric</th>{% if has_batch_thresholds %}<th>Batch</th>{% endif %}<th class="num">Median</th><th class="num">Lower bound</th><th class="num">Upper bound</th><th class="num">Cells below</th><th class="num">Cells above</th></tr>
+    {% for t in qc.thresholds %}
+    <tr><td>{{ t.label }}</td>{% if has_batch_thresholds %}<td>{{ t.batch or "all" }}</td>{% endif %}
+      <td class="num">{{ fmt(t.median) }}</td><td class="num">{{ fmt(t.lower) if t.lower is not none else "—" }}</td>
+      <td class="num">{{ fmt(t.upper) }}</td><td class="num">{{ "{:,}".format(t.n_low) }}</td><td class="num">{{ "{:,}".format(t.n_high) }}</td></tr>
+    {% endfor %}
+  </table></div>
+  <div class="table-tools"><button class="dl" onclick="downloadTable('tbl-thresholds','qc_thresholds.csv')">Download CSV</button></div>
+
+  {% if reason_rows %}
+  <h3>Why cells were flagged</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Reason</th><th class="num">Cells</th><th class="num">% of cells</th></tr>
+    {% for label, n, pct in reason_rows %}<tr><td>{{ label }}</td><td class="num">{{ "{:,}".format(n) }}</td><td class="num">{{ "%.1f" | format(pct) }}%</td></tr>{% endfor %}
+  </table></div>
+  <p class="small">A cell can be flagged for more than one reason.</p>
+  {% endif %}
+
+  <h3>QC metric distributions</h3>
+  <div class="figure">{{ figs.qc_dist | safe }}</div>
+  <p class="figcap">Distribution of each QC metric across cells; red lines mark the MAD-based thresholds{% if has_batch_thresholds %} (one per batch){% endif %}. Counts and genes are on a log scale.</p>
+  <h3>Library size vs. detected genes</h3>
+  <div class="figure">{{ figs.qc_scatter | safe }}</div>
+  <p class="figcap">Each point is a cell{% if subsampled %} (random subsample of {{ "{:,}".format(max_points) }} shown){% endif %}. Flagged cells are highlighted; hover to see why. Cells far below the main diagonal have few genes for their depth (low complexity).</p>
+  {% if figs.doublet %}
+  <h3>Doublet scores</h3>
+  <div class="figure">{{ figs.doublet | safe }}</div>
+  <p class="figcap">Scrublet scores (log-scaled counts). {{ "{:,}".format(qc.doublets.n_predicted) }} cells ({{ "%.1f" | format(qc.doublets.pct_predicted) }}%) exceed the automatic threshold; expected rate ≈ {{ "%.0f" | format(100 * qc.doublets.expected_rate) }}%. {% if qc.doublets.pct_predicted < 100 * qc.doublets.expected_rate / 3 %}The automatic threshold looks conservative here: a right-hand shoulder or second mode in the histogram suggests more doublets than were called.{% endif %}</p>
+  {% else %}
+  <p class="small"><b>Doublet detection:</b> {{ qc.doublets.reason }}</p>
+  {% endif %}
+  {% if qc_notes %}
+  <h3>QC notes</h3>
+  <ul class="findings">{% for n in qc_notes %}<li class="{{ n.severity }}"><span class="ico">{{ icons[n.severity] }}</span><span>{{ n.message }}</span></li>{% endfor %}</ul>
+  {% endif %}
+</section>
+
+{# ================================================================ 4 #}
+<section class="card" id="clustering">
+  <h2><span class="num">4</span>Clustering overview</h2>
+  <p class="lede">{{ "{:,}".format(summary.dataset.n_cells) }} cells were grouped into <b>{{ clust.n_clusters }} clusters</b> with the Leiden algorithm on a {{ clust.n_neighbors }}-nearest-neighbour graph built from {{ clust.n_pcs }} principal components{% if prep.integration == "harmony" %} after Harmony batch integration{% endif %}.
+  {% if clust.auto_selected %}The resolution ({{ clust.resolution }}) was selected automatically as the best trade-off between cluster separation (silhouette) and reproducibility across random seeds (stability).{% else %}The resolution ({{ clust.resolution }}) was set by the user.{% endif %}</p>
+  <div class="figure">{{ figs.umap_clusters | safe }}</div>
+  <p class="figcap">UMAP embedding coloured by cluster, with cluster numbers at each cluster's centre. Click a legend entry to isolate that cluster. Labels are the automated candidates from section {{ ann_num }}{% if subsampled %}; a random subsample of {{ "{:,}".format(max_points) }} cells is drawn{% endif %}.</p>
+  <h3>QC metrics on the embedding</h3>
+  <div class="figure">{{ figs.umap_metrics | safe }}</div>
+  <p class="figcap">Use the menu to colour cells by a QC metric. Regions of uniformly low counts, high mitochondrial fraction, or high doublet score that coincide with a cluster suggest a technical rather than biological population.</p>
+  {% if figs.batch_comp %}
+  <h3>Sample composition of clusters</h3>
+  <div class="figure">{{ figs.batch_comp | safe }}</div>
+  <p class="figcap">Share of each cluster's cells coming from each sample. Clusters made almost entirely of one sample can reflect sample-specific biology or a batch effect.</p>
+  {% endif %}
+  {% if clust.sweep %}
+  <h3>Resolution selection</h3>
+  <div class="table-wrap"><table id="tbl-sweep">
+    <tr><th class="num">Resolution</th><th class="num">Clusters</th><th class="num">Stability (mean ARI)</th><th class="num">Silhouette</th><th class="num">Score</th><th></th></tr>
+    {% for r in clust.sweep %}
+    <tr class="{% if r.resolution == clust.resolution %}chosen{% endif %}"><td class="num">{{ r.resolution }}</td><td class="num">{{ r.n_clusters }}</td>
+      <td class="num">{{ "%.3f" | format(r.stability_ari) }}</td><td class="num">{{ "%.3f" | format(r.silhouette) if r.silhouette is not none else "—" }}</td>
+      <td class="num">{{ "%.3f" | format(r.score) }}</td><td>{% if r.resolution == clust.resolution %}<span class="badge medium">selected</span>{% endif %}</td></tr>
+    {% endfor %}
+  </table></div>
+  <p class="small">Score = stability × (silhouette + 1) / 2. Re-run with <code>--resolution</code> to override; higher values give more, smaller clusters.</p>
+  {% endif %}
+</section>
+
+{# ================================================================ 5 #}
+<section class="card" id="cluster-qc">
+  <h2><span class="num">5</span>Per-cluster QC</h2>
+  <p class="lede">QC metrics broken down by cluster. A "cell type" that is really a population of damaged cells, empty droplets, or doublets usually shows up here: check any cluster marked <span class="badge warning">⚠ likely artefact</span> or <span class="badge caution">! review</span> before interpreting it biologically.</p>
+  <div class="table-wrap"><table id="tbl-cluster-qc">
+    <tr><th>Cluster</th><th>Candidate label</th><th>QC status</th><th class="num">Cells</th><th class="num">Counts</th><th class="num">Genes</th>{% if qc.has_mt %}<th class="num">Mito %</th>{% endif %}{% if has_doublets %}<th class="num">Doublets %</th>{% endif %}<th class="num">Outliers %</th>{% if has_batch %}<th>Main sample</th>{% endif %}</tr>
+    {% for r in cluster_rows %}
+    <tr class="row-{{ r.status }}{% if r.reasons %} has-reasons{% endif %}">
+      <td><span class="swatch" style="background:{{ r.color }}"></span><b>{{ r.cluster }}</b></td>
+      <td>{{ r.label }}</td>
+      <td>{{ status_badge(r.status) | safe }}</td>
+      <td class="num">{{ "{:,}".format(r.n_cells) }} <span class="small">({{ "%.1f" | format(r.pct_cells) }}%)</span></td>
+      <td class="num">{{ "{:,.0f}".format(r.median_counts) }}</td>
+      <td class="num">{{ "{:,.0f}".format(r.median_genes) }}</td>
+      {% if qc.has_mt %}<td class="num">{{ "%.1f" | format(r.median_pct_mt) }}</td>{% endif %}
+      {% if has_doublets %}<td class="num">{{ "%.1f" | format(r.pct_doublets) }}</td>{% endif %}
+      <td class="num">{{ "%.1f" | format(r.pct_outliers) }}</td>
+      {% if has_batch %}<td>{{ r.dominant_batch }} <span class="small">({{ "%.0f" | format(r.dominant_batch_pct) }}%)</span></td>{% endif %}
+    </tr>
+    {% if r.reasons %}
+    <tr class="reason-row row-{{ r.status }}"><td></td><td colspan="{{ cqc_cols - 1 }}"><ul class="reasons">{% for x in r.reasons %}<li class="{{ x.severity }}">{{ x.message }}</li>{% endfor %}</ul></td></tr>
+    {% endif %}
+    {% endfor %}
+  </table></div>
+  <div class="table-tools"><button class="dl" onclick="downloadTable('tbl-cluster-qc','cluster_qc.csv')">Download CSV</button></div>
+  <p class="small">Counts, genes and mito % are per-cluster medians; doublets % is the share of cells above Scrublet's threshold; outliers % is the share failing any cell-level QC threshold.</p>
+  <h3>QC metric distributions by cluster</h3>
+  <div class="figure">{{ figs.cluster_boxes | safe }}</div>
+  <p class="figcap">Box plots (median, interquartile range, 1.5×IQR whiskers) of each metric per cluster. Flagged clusters are drawn in the status colour and marked on the axis (⚠ likely artefact, ! review).</p>
+</section>
+
+{# ================================================================ 6 #}
+<section class="card" id="annotation">
+  <h2><span class="num">6</span>Cell-type annotation</h2>
+  <p class="lede">Each cluster's marker genes were compared with the {{ ann.reference_source }} ({{ ann.n_scored_types }} of {{ ann.n_reference_types }} {{ ann.species }} cell types scorable in this dataset). Labels are ranked hypotheses with the supporting genes shown; clusters without a confident match are left <b>unresolved</b> rather than guessed.</p>
+  <div class="table-wrap"><table id="tbl-annotation">
+    <tr><th>Cluster</th><th>Proposed label</th><th>Confidence</th><th>Evidence</th><th>Other candidates</th><th>Top marker genes</th><th>QC</th></tr>
+    {% for r in ann_rows %}
+    <tr class="row-{{ r.qc_status }}">
+      <td><span class="swatch" style="background:{{ r.color }}"></span><b>{{ r.cluster }}</b></td>
+      <td><b>{{ r.label }}</b>{% for s in r.states %} <span class="badge outline">{{ s }}</span>{% endfor %}{% if r.evidence == "expression" %}<br><span class="small">expression-based call</span>{% endif %}</td>
+      <td><span class="badge {{ r.confidence }}">{{ r.confidence }}</span></td>
+      <td class="small">{{ r.rationale }}</td>
+      <td class="small">{% for c in r.others %}{{ c }}<br>{% endfor %}</td>
+      <td class="genes">{% for g in r.markers %}{% if g in r.hit_genes %}<b>{{ g }}</b>{% else %}{{ g }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+      <td>{{ status_badge(r.qc_status) | safe }}</td>
+    </tr>
+    {% endfor %}
+  </table></div>
+  <div class="table-tools"><button class="dl" onclick="downloadTable('tbl-annotation','cluster_annotation.csv')">Download CSV</button></div>
+  <p class="small">Confidence: <span class="badge high">high</span> ≥ half of the reference markers support the cluster (≥ 3 genes, FDR &lt; 0.01); <span class="badge medium">medium</span> ≥ 30% (≥ 2 genes, FDR &lt; 0.05); anything weaker is not assigned. Marker genes in <b>bold</b> are canonical markers of the proposed type.</p>
+  {% if ann_notes %}<ul class="findings">{% for n in ann_notes %}<li class="{{ n.severity }}"><span class="ico">{{ icons[n.severity] }}</span><span>{{ n.message }}</span></li>{% endfor %}</ul>{% endif %}
+</section>
+
+{# ================================================================ 7 #}
+<section class="card" id="markers">
+  <h2><span class="num">7</span>Marker genes</h2>
+  <p class="lede">The most specific up-regulated genes of each cluster (Wilcoxon rank-sum test against all other cells).</p>
+  {% if figs.heatmap %}
+  <div class="figure">{{ figs.heatmap | safe }}</div>
+  <p class="figcap">Mean log-normalised expression per cluster, z-scored per gene (red = higher than in other clusters, blue = lower). Hover for mean expression and the fraction of expressing cells.</p>
+  {% else %}<p class="small">Marker genes could not be computed (fewer than two clusters).</p>{% endif %}
+  <details><summary>Full top-{{ cfg.annotation.n_markers_display }} marker table</summary>
+  <div class="table-wrap"><table id="tbl-markers">
+    <tr><th>Cluster</th><th>Gene</th><th class="num">log2 fold change</th><th class="num">% in cluster</th><th class="num">% elsewhere</th><th class="num">Adj. p-value</th></tr>
+    {% for r in marker_rows %}<tr><td>{{ r.cluster }}</td><td class="mono">{{ r.gene }}</td><td class="num">{{ "%.2f" | format(r.log2fc) }}</td><td class="num">{{ "%.0f" | format(100 * r.pct_in) }}</td><td class="num">{{ "%.0f" | format(100 * r.pct_out) }}</td><td class="num">{{ "%.1e" | format(r.padj) }}</td></tr>{% endfor %}
+  </table></div>
+  <div class="table-tools"><button class="dl" onclick="downloadTable('tbl-markers','marker_genes.csv')">Download CSV</button></div>
+  </details>
+</section>
+
+{# ================================================================ 8 #}
+{% if spatial %}
+<section class="card" id="spatial">
+  <h2><span class="num">8</span>Spatial analysis</h2>
+  <p class="lede">Clusters mapped back onto the tissue{% if spatial.has_image %} (over the H&amp;E image){% endif %}, with neighbourhood enrichment and spatially variable genes. Coordinates are in {{ spatial.coord_units }}; the median distance to the nearest {{ "spot" if summary.input.modality == "visium" else "cell" }} is {{ "%.1f" | format(spatial.median_nn_distance) }}.</p>
+  <div class="figure">{{ figs.spatial_clusters | safe }}</div>
+  <p class="figcap">Each {{ "spot" if summary.input.modality == "visium" else "cell" }} coloured by cluster (same colours as the UMAP). Click a legend entry to isolate a cluster.</p>
+  <div class="grid2">
+    <div><h3>{{ "UMIs per spot" if summary.input.modality == "visium" else "Transcripts per cell" }}</h3><div class="figure">{{ figs.spatial_counts | safe }}</div>
+    <p class="figcap">Library size in space. Gradients or patches of low counts often trace tissue damage, folds, or edge effects.</p></div>
+    {% if summary.input.modality == "visium" %}
+    <div><h3>Genes per spot</h3><div class="figure">{{ figs.spatial_density | safe }}</div>
+    <p class="figcap">Detected genes per spot. Spots on a regular grid have uniform density, so gene detection is the more informative quality map.</p></div>
+    {% else %}
+    <div><h3>Cell density</h3><div class="figure">{{ figs.spatial_density | safe }}</div>
+    <p class="figcap">Number of cells per bin across the section. Empty or sparse regions can reflect tissue tears, folds, or segmentation failures.</p></div>
+    {% endif %}
+  </div>
+  {% if figs.nhood %}
+  <h3>Neighbourhood enrichment</h3>
+  <div class="figure">{{ figs.nhood | safe }}</div>
+  <p class="figcap">Permutation z-scores ({{ spatial.nhood_n_perms }} label shuffles) for how often {{ "spots" if summary.input.modality == "visium" else "cells" }} of two clusters are graph neighbours ({{ spatial.graph.method }}). Red = co-localised, blue = segregated; the diagonal measures how spatially compact each cluster is.</p>
+  <div class="grid2">
+    <div><div class="table-wrap"><table><tr><th>Co-localised clusters</th><th class="num">z</th></tr>
+      {% for p in spatial.colocalised_pairs %}<tr><td>{{ p.a }} · {{ labels[p.a] }} ↔ {{ p.b }} · {{ labels[p.b] }}</td><td class="num">{{ "%.1f" | format(p.z) }}</td></tr>{% else %}<tr><td colspan="2" class="small">No pairs with z &gt; 2.</td></tr>{% endfor %}
+    </table></div></div>
+    <div><div class="table-wrap"><table><tr><th>Segregated clusters</th><th class="num">z</th></tr>
+      {% for p in spatial.segregated_pairs %}<tr><td>{{ p.a }} · {{ labels[p.a] }} ↔ {{ p.b }} · {{ labels[p.b] }}</td><td class="num">{{ "%.1f" | format(p.z) }}</td></tr>{% else %}<tr><td colspan="2" class="small">No pairs with z &lt; −2.</td></tr>{% endfor %}
+    </table></div></div>
+  </div>
+  {% endif %}
+  <h3>Spatially variable genes</h3>
+  <p class="small">{{ spatial.n_genes_significant }} of {{ spatial.n_genes_autocorr }} tested genes have significant spatial autocorrelation (Moran's I, BH-adjusted p &lt; 0.05).</p>
+  <div class="grid2">
+    <div class="figure">{{ figs.moran | safe }}</div>
+    <div>{% if figs.spatial_genes %}{% endif %}<div class="table-wrap"><table id="tbl-moran"><tr><th>Gene</th><th class="num">Moran's I</th><th class="num">FDR</th></tr>
+      {% for m in spatial.moran_top %}<tr><td class="mono">{{ m.gene }}</td><td class="num">{{ "%.3f" | format(m.I) }}</td><td class="num">{{ "%.1e" | format(m.padj) }}</td></tr>{% endfor %}
+    </table></div></div>
+  </div>
+  {% if figs.spatial_genes %}<div class="figure">{{ figs.spatial_genes | safe }}</div>
+  <p class="figcap">Expression of the three most spatially autocorrelated genes.</p>{% endif %}
+  {% if spatial_notes %}<ul class="findings">{% for n in spatial_notes %}<li class="{{ n.severity }}"><span class="ico">{{ icons[n.severity] }}</span><span>{{ n.message }}</span></li>{% endfor %}</ul>{% endif %}
+</section>
+{% endif %}
+
+{# ================================================================ 9 #}
+{% if narrative %}
+<section class="card narrative" id="narrative">
+  <h2><span class="num">{{ narrative_num }}</span>AI narrative summary</h2>
+  {% for p in narrative.paragraphs %}<p>{{ p }}</p>{% endfor %}
+  <p class="ai-note">Written by {{ narrative.model }} (Anthropic Claude API) from the structured summary statistics in this report only; no expression data or per-cell information was sent. AI-generated text can contain errors. Verify every statement against the sections above.</p>
+</section>
+{% endif %}
+
+{# ================================================================ 10 #}
+<section class="card" id="methods">
+  <h2><span class="num">{{ methods_num }}</span>Methods &amp; parameters</h2>
+  <p class="lede">A description of every step, suitable as a starting point for a methods section, followed by every parameter used in this run.</p>
+  <div class="methods-text">{% for p in methods_paragraphs %}<p>{{ p }}</p>{% endfor %}</div>
+  <h3>All parameters</h3>
+  <p class="small">Every setting used in this run ({{ params | length }} parameters). Save them with <code>cellscribe config</code> and re-run with <code>--config</code> to reproduce this report exactly.</p>
+  <details><summary>Show all parameters</summary>
+  <div class="table-wrap"><table id="tbl-params"><tr><th>Parameter</th><th>Value</th></tr>
+    {% for k, v in params %}<tr><td class="mono">{{ k }}</td><td class="mono">{{ v }}</td></tr>{% endfor %}
+  </table></div>
+  <div class="table-tools"><button class="dl" onclick="downloadTable('tbl-params','parameters.csv')">Download CSV</button></div>
+  </details>
+  <h3>Software versions</h3>
+  <div class="table-wrap"><table><tr><th>Package</th><th>Version</th></tr>
+    {% for k, v in summary.software.items() %}<tr><td class="mono">{{ k }}</td><td class="mono">{{ v }}</td></tr>{% endfor %}
+  </table></div>
+  <h3>Runtime by stage</h3>
+  <p class="small">{% for k, v in timings %}{{ k }} {{ "%.1f" | format(v) }} s{% if not loop.last %} · {% endif %}{% endfor %}</p>
+  {% if narrative_status %}<p class="small"><b>AI narrative:</b> {{ narrative_status }}</p>{% endif %}
+</section>
+
+{# ================================================================ 11 #}
+<section class="card" id="cite">
+  <h2><span class="num">{{ cite_num }}</span>How to cite</h2>
+  <p class="lede">If this report contributed to your work, please cite Cellscribe and the methods it builds on.</p>
+  <pre class="cite">{{ citation_text }}</pre>
+  <details><summary>BibTeX</summary><pre class="cite">{{ bibtex }}</pre></details>
+  <h3>Methods and software used in this report</h3>
+  <ol class="refs">{% for r in references %}<li>{{ r }}</li>{% endfor %}</ol>
+</section>
+<footer class="report-foot">Cellscribe {{ version }} · open-source (MIT) · research use only, not validated for clinical use</footer>
+</main>
+</div>
+<script>
+function downloadTable(id, filename) {
+  var t = document.getElementById(id); if (!t) return;
+  var rows = Array.from(t.querySelectorAll('tr')).map(function (tr) {
+    return Array.from(tr.querySelectorAll('th,td')).map(function (c) {
+      var s = c.innerText.replace(/\s+/g, ' ').trim().replace(/"/g, '""');
+      return '"' + s + '"';
+    }).join(',');
+  });
+  var blob = new Blob([rows.join('\n')], {type: 'text/csv'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>
