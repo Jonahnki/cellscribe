@@ -199,9 +199,9 @@ If Cellscribe contributes to your work, please cite it (see [`CITATION.cff`](CIT
              for single-cell and spatial transcriptomics},
   author  = {Adedeji, John Adeyemo},
   year    = {2026},
-  version = {0.1.0},
-  url     = {https://github.com/jonahnki/cellscribe},
-  license = {MIT}
+    version = {0.1.0},
+  doi     = {10.5281/zenodo.22967161},
+  url     = {https://github.com/jonahnki/cellscribe}
 }
 ```
 
